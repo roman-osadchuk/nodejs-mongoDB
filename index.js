@@ -65,9 +65,9 @@ app.post('/users', (req, res, next) => {
                 User.getUsers((err, users) => {
                     err ? console.log(err) : false;
 
-                    filterSuperadmins(arr => {
+                    function filterSuperadmins(arr){
                         return arr.role === 'superadmin';
-                    })
+                    }
 
                     if(users.filter(filterSuperadmins).length === 2){
                         reject('There are already 2 superadmins. You cannot add any more');
@@ -86,9 +86,9 @@ app.post('/users', (req, res, next) => {
             User.getUsers((err, users) => {
                 err ? console.log(err) : false;
 
-                findEmail(arr => {
+                function findEmail(arr){
                     return arr.email === value.email;
-                })
+                }
 
                 if(users.find(findEmail)){
                     reject('this email is already used');
@@ -147,11 +147,14 @@ app.patch('/users/:id', (req, res, next) => {
         return new Promise((resolve, reject) => {
             if(value.role === 'superadmin'){
                 User.getUsers((err, users) => {
-                    err ? console.log(err) : false;
+                    if(err){
+                        reject(err);
+                        return;
+                    }
 
-                    filterSuperadmins(arr => {
+                    function filterSuperadmins(arr) {
                         return arr.role === 'superadmin';
-                    })
+                    }
 
                     if(users.filter(filterSuperadmins).length === 2){
                         reject('There are already 2 superadmins. You cannot add any more');
@@ -170,9 +173,9 @@ app.patch('/users/:id', (req, res, next) => {
             User.getUsers((err, users) => {
                 err ? console.log(err) : false;
 
-                findEmail(arr => {
+                function findEmail(arr){
                     return arr.email === value.email;
-                })
+                }
 
                 if(users.find(findEmail)){
                     reject('this email is already used');
@@ -219,9 +222,9 @@ app.delete('/users/:id', (req, res, next) => {
                 User.getUsers((err, users) => {
                     err ? console.log(err) : false;
 
-                    filterSuperadmins(arr => {
+                    function filterSuperadmins(arr){
                         return arr.role === 'superadmin';
-                    })
+                    }
 
                     if(users.filter(filterSuperadmins).length === 1){
                         reject('You cannot delete the last superadmin');
@@ -398,6 +401,27 @@ app.delete('/user_groups/:user_groups_id/:id', (req, res, next) => {
                         reject('User is not exist in this group');
                         return;
                     } 
+                }
+            })
+        })
+    })
+    .then(() => {
+        //checking if user is the only person in group
+        return new Promise((resolve, reject) => {
+            UserGroup.getUserGroups((err, groups) => {
+                if(err){
+                    reject(err);
+                    return;
+                }else{
+                    groups.forEach((elt, ind, arr) => {
+                        let index = elt.usersInGroup.indexOf(id);
+                        console.log(index, arr.length);
+                        if(index === 0 && arr.length === 2){
+                            reject('you cannot delete this user as he is last person in a group');
+                            return;
+                        }
+                    });
+                    return resolve();
                 }
             })
         })

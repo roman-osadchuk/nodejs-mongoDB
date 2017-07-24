@@ -58,15 +58,13 @@ module.exports.removeUserFromGroup = (id, data, new_data) => {
 module.exports.removeUserFromAllGroups = (id, data) => {
 
     UserGroup.find((err, groups) => {
-
         groups.forEach((elt, ind, arr) => {
             let index = elt.usersInGroup.indexOf(id);
-            console.log(index);
             if(index >= 0){
                 elt.usersInGroup.splice(index, 1);
-                console.log(elt.usersInGroup);
                 elt.save(data);
             }
+            elt.save(data);
         });
     });  
 }
